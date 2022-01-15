@@ -1,0 +1,483 @@
+﻿<!DOCTYPE html>
+
+<!-- Венета Кирева, група 3, ф.н. 82184 -->
+
+<html>
+	<head>
+		<meta content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" name="viewport">
+		<script src="three.min.js"></script>
+		<script src="OrbitControls.js"></script>
+	</head>
+	
+	<body>
+		<script>
+			const FN = 82184; // факултетен номер
+		</script>
+		
+		<script src="init.js"></script>
+			
+		<script>
+
+			// 1. преименувайте файла на moidom-g-fn.html
+			//    g=номер на група, а fn=факултетен номер
+			//
+			// 2. сменете стойността на константата FN да
+			//    е факултетния номер, за да се генерират
+			//    сцената, земята и контурът на къщата ви
+			//
+			// 3. едва тогава почвайте да строите стените
+			//    и да добавяте исканите обекти по стаите
+			//
+			// 4. init.js се създава глобален обект scene
+			//    и в него трябва да сложите обектите си!
+			//
+			// 5. кубът по-долу е само за пример как може
+			//    да се слагат обекти в сцената
+
+			function drawWall (width , height , depth , posX, posY, posZ, rotate)
+			{
+				var	material = new THREE.MeshPhongMaterial( {color:'#F5DEB3'} );
+				var geometry =  new THREE.BoxGeometry( width , height , depth  );
+				var wall = new THREE.Mesh( geometry, material );
+				wall.position.set( posX, posY, posZ);
+				wall.rotateY(THREE.Math.degToRad(rotate));
+				wall.receiveShadow = true;
+				wall.castShadow = true;
+				return wall;
+			}
+
+			function drawShelf(width, height, depth, posX, posY, posZ, rotate)
+			{
+				var material = new THREE.MeshLambertMaterial( {color:'#493429'} )
+				var geometry = new THREE.BoxGeometry( width , height, depth );
+				var shelf = new THREE.Mesh( geometry, material );
+				shelf.position.set( posX, posY, posZ);
+				shelf.rotateY(THREE.Math.degToRad(rotate));
+				shelf.receiveShadow = true;
+				shelf.castShadow = true;
+				return shelf;
+			}
+
+			function drawBottleTopFront1(radiusTop, radiusBottom, bottleHeight, radialSegments,
+										 posX, posY, posZ, glassColor)
+			{
+				var geometry = new THREE.CylinderBufferGeometry( radiusTop, radiusBottom, bottleHeight, radialSegments);
+				var materials = [
+					new THREE.MeshPhysicalMaterial( {
+						shininess: 100,
+						color: glassColor,
+						reflectivity: 0.2,
+						transparent: true,
+						opacity: 0.5,
+						side: THREE.FrontSide,
+						depthWrite: false}),
+					new THREE.MeshPhongMaterial( {
+						opacity: 1,
+						reflectivity: 0.5,
+						color: '#77552f'} ),
+					new THREE.MeshPhongMaterial( {
+						opacity: 0,
+						reflectivity: 0,
+						transparent: true,} )
+				];
+
+				var bottle = new THREE.Mesh( geometry, materials );
+				bottle.position.set( posX, posY, posZ);
+				bottle.receiveShadow = true;
+				bottle.castShadow = true;
+				return bottle;
+			}
+
+			function drawBottleTopBack1(radiusTop, radiusBottom, bottleHeight, radialSegments,
+										posX, posY, posZ, glassColor)
+			{
+				var geometry = new THREE.CylinderBufferGeometry( radiusTop, radiusBottom, bottleHeight, radialSegments);
+				var materials = [
+					new THREE.MeshPhysicalMaterial( {
+						shininess: 100,
+						color: glassColor,
+						reflectivity: 0.2,
+						transparent: true,
+						opacity: 0.5,
+						side: THREE.BackSide,
+						depthWrite: false}),
+					new THREE.MeshPhongMaterial( {
+						opacity: 1,
+						reflectivity: 0.5,
+						color: '#77552f'} ),
+					new THREE.MeshPhongMaterial( {
+						opacity: 0,
+						reflectivity: 0,
+						transparent: true,} )
+				];
+
+				var bottle = new THREE.Mesh( geometry, materials );
+				bottle.position.set( posX, posY, posZ);
+				bottle.receiveShadow = true;
+				bottle.castShadow = true;
+				return bottle;
+			}
+
+			function drawBottleBottom1(radiusTop, radiusBottom, bottleHeight, radialSegments,
+									   posX, posY, posZ, glassColor)
+			{
+				var geometry = new THREE.CylinderBufferGeometry( radiusTop, radiusBottom, bottleHeight, radialSegments);
+				var materials = [
+					new THREE.MeshPhysicalMaterial( {
+						shininess: 100,
+						color: glassColor,
+						reflectivity: 0.2,
+						transparent: true,
+						opacity: 0.5,
+						depthWrite: false
+					}),
+					new THREE.MeshPhongMaterial( {
+						opacity: 0,
+						reflectivity: 0,
+						transparent: true
+					} ),
+					new THREE.MeshPhongMaterial( {
+						opacity: 0,
+						reflectivity: 0,
+						transparent: true,
+					} )
+				];
+
+				var bottle = new THREE.Mesh( geometry, materials );
+				bottle.position.set( posX, posY, posZ);
+				bottle.receiveShadow = true;
+				bottle.castShadow = true;
+				return bottle;
+			}
+
+			function drawBottleBottom2(radius, posX, posY, posZ, glassColor)
+			{
+				var material = new THREE.MeshPhysicalMaterial({
+					shininess: 100,
+					color: glassColor,
+					reflectivity: 0.2,
+					transparent: true,
+					opacity: 0.5,
+					depthWrite: false
+				});
+				var geometry = new THREE.SphereGeometry( radius, 32, 32);
+				bottle = new THREE.Mesh(geometry, material);
+				bottle.position.set( posX, posY, posZ);
+				bottle.receiveShadow = true;
+				bottle.castShadow = true;
+				return bottle;
+			}
+
+			function drawLampPole(radiusTop, radiusBottom, length,  posX, posY, posZ, rotate)
+			{
+				var geometry = new THREE.CylinderGeometry( radiusTop, radiusBottom, length, 32 );
+				var material = new THREE.MeshLambertMaterial( {color:'#493429'} );
+				var pole = new THREE.Mesh( geometry, material );
+				pole.position.set( posX, posY, posZ);
+				pole.rotateZ(THREE.Math.degToRad(rotate));
+				pole.receiveShadow = true;
+				pole.castShadow = true;
+				return pole;
+			}
+
+			function drawLampTopFront(radiusTop, radiusBottom, length,  posX, posY, posZ, lampColor)
+			{
+				var geometry = new THREE.CylinderGeometry( radiusTop, radiusBottom, length, 32 );
+				var materials = [
+					new THREE.MeshStandardMaterial ( {
+						color: lampColor,
+						side: THREE.FrontSide,
+					} ),
+					new THREE.MeshPhongMaterial( {
+						opacity: 0,
+						reflectivity: 0,
+						transparent: true
+					} ),
+					new THREE.MeshPhongMaterial( {
+						opacity: 0,
+						reflectivity: 0,
+						transparent: true,
+					} )
+				];
+				var pole = new THREE.Mesh( geometry, materials );
+				pole.position.set( posX, posY, posZ);
+				pole.receiveShadow = true;
+				pole.castShadow = true;
+				return pole;
+			}
+
+			function drawLampTopBack(radiusTop, radiusBottom, length,  posX, posY, posZ, lampColor)
+			{
+				var geometry = new THREE.CylinderGeometry( radiusTop, radiusBottom, length, 32 );
+				var materials = [
+					new THREE.MeshStandardMaterial ( {
+						color: lampColor,
+						side: THREE.BackSide,
+					} ),
+					new THREE.MeshPhongMaterial( {
+						opacity: 0,
+						reflectivity: 0,
+						transparent: true
+					} ),
+					new THREE.MeshPhongMaterial( {
+						opacity: 0,
+						reflectivity: 0,
+						transparent: true,
+					} )
+				];
+				var pole = new THREE.Mesh( geometry, materials );
+				pole.position.set( posX, posY, posZ);
+				pole.receiveShadow = true;
+				pole.castShadow = true;
+				return pole;
+			}
+
+			function drawBulb(posX, posY, posZ)
+			{
+				var lightBulb = new THREE.PointLight( '#ffee88', 0.07, 100, 2 );
+
+				lightBulb.add(
+						new THREE.Mesh(
+							new THREE.SphereGeometry( 0.07, 16, 8 ),
+							new THREE.MeshStandardMaterial( {
+								emissiveIntensity: 1,
+								emissive: '#e5e56b',
+								color: '#FFFFFF' })
+						)
+				);
+
+				lightBulb.position.set( posX, posY, posZ );
+				lightBulb.castShadow = true;
+				return lightBulb;
+			}
+
+			function drawTasselRound(radius, posX, posY, posZ, tasselColor)
+			{
+				var geometry = new THREE.SphereGeometry( radius , 32, 32 );
+				var material = new THREE.MeshStandardMaterial( { color: tasselColor } );
+				var tassel = new THREE.Mesh( geometry, material );
+				tassel.position.set( posX, posY, posZ );
+				tassel.castShadow = true;
+				return tassel;
+			}
+
+			function drawTasselCone(radius, posX, posY, posZ, tasselColor)
+			{
+				var geometry = new THREE.SphereGeometry( radius , 0.05, 4 );
+				var material = new THREE.MeshStandardMaterial( { color: tasselColor } );
+				var tassel = new THREE.Mesh( geometry, material );
+				tassel.position.set( posX, posY, posZ );
+				tassel.castShadow = true;
+				return tassel;
+			}
+
+			function drawWalls()
+			{
+				var walls =  new THREE.Group();
+				walls.add(drawWall(12.8, 2.6, 0.2, -0.5, 1.2, 4.9, 0));
+				walls.add(drawWall(8, 1, 0.2, 2, 0.4, -5.9, 0));
+				walls.add(drawWall(8, 0.4, 0.2, 2, 2.3, -5.9, 0));
+				walls.add(drawWall(0.2, 1.2, 0.2, 2, 1.5, -5.9, 0));
+				walls.add(drawWall(0.2, 1.2, 0.2, 0, 1.5, -5.9, 0));
+				walls.add(drawWall(0.2, 1.2, 0.2, 4, 1.5, -5.9, 0));
+				walls.add(drawWall(3, 2.6, 0.2, -1.9, 1.2, -4.5, 90));
+				walls.add(drawWall(3, 2.6, 0.2, -1.9, 1.2, -4.5, 90));
+				walls.add(drawWall(8, 1.2, 0.2, -6.9, 0.2, 1, 90));
+				walls.add(drawWall(8, 0.4, 0.2, -6.9, 2.3, 1, 90));
+				walls.add(drawWall(2.2, 3, 0.2, -5.9, 1, -2.9, 0));
+				walls.add(drawWall(2.2, 0, 0.2, -5.9, 1, -2.9, 0));
+				walls.add(drawWall(1.6, 0.4, 0.2, -4, 2.3, -2.9, 0));
+				walls.add(drawWall(1.6, 2.6, 0.2, -2.6, 1.2, -2.9, 0));
+				walls.add(drawWall(1.6, 2.6, 0.2, -1, 1.2, -2.9, 0));
+				walls.add(drawWall(1.6, 0.4, 0.2, 0.6, 2.3, -2.9, 0));
+				walls.add(drawWall(4.8, 2.6, 0.2, 3.6, 1.2, -2.9, 0));
+				walls.add(drawWall(3, 1, 0.2, 5.9, 0.4, -4.4, 90));
+				walls.add(drawWall(3, 0.4, 0.2, 5.9, 2.3, -4.4, 90));
+				walls.add(drawWall(0.6, 1.6, 0.2, 5.9, 1.6, -3.2, 90));
+				walls.add(drawWall(0.6, 1.6, 0.2, 5.9, 1.6, -5.7, 90));
+				walls.add(drawWall(8, 1, 0.2, 5.9, 0.4, 1, 90));
+				walls.add(drawWall(8, 0.4, 0.2, 5.9, 2.3, 1, 90));
+				walls.add(drawWall(1, 1.6, 0.2, 5.9, 1.6, 4.5, 90));
+				walls.add(drawWall(2, 1.6, 0.2, 5.9, 1.6, 1, 90));
+				walls.add(drawWall(1, 1.6, 0.2, 5.9, 1.6, -2.4, 90));
+				walls.add(drawWall(4, 2.6, 0.2, 4, 1.2, 1, 0));
+				walls.add(drawWall(1.6, 0.4, 0.2, 2, 2.3, 2.9, 90));
+				walls.add(drawWall(1.4, 2.6, 0.2, 2, 1.2, 1.6, 90));
+				walls.add(drawWall(1.2, 2.6, 0.2, 2, 1.2, 4.3, 90));
+				walls.add(drawWall(3.6, 2.6, 0.2, -1.9, 1.2, -1.7, 90));
+				walls.add(drawWall(1.44, 2.6, 0.25, -1.40, 1.2, 0.5, 135));
+				walls.add(drawWall(1.4, 0.4, 0.2, 0.5, 2.3, 1, 0));
+				walls.add(drawWall(0.8, 2.6, 0.2, -0.6, 1.2, 1, 0));
+				walls.add(drawWall(1.2, 2.6, 0.2, 1.8, 1.2, 1, 0));
+				walls.add(drawWall(1, 2, 0.2, -6.9, 1.2, 4.5, 90));
+				walls.add(drawWall(1, 2, 0.2, -6.9, 1.2, -2.5, 90));
+				walls.add(drawWall(2, 2, 0.2, -6.9, 1.2, 1, 90));
+				scene.add( walls );
+			}
+
+			function drawShelves()
+			{
+				var shelves = new THREE.Group();
+				shelves.add(drawShelf(7, 0.05, 0.4, -2, 2, 4.6, 0));
+				shelves.add(drawShelf(7, 0.05, 0.4, -2, 1.2, 4.6, 0));
+				scene.add( shelves );
+			}
+
+			function drawBottles()
+			{
+				var bottles = new THREE.Group();
+
+				// bottle
+				bottles.add(drawBottleTopFront1(0.04, 0.04, 0.05, 32, 0.8, 1.595, 4.45, '#344b05'));
+				bottles.add(drawBottleTopBack1(0.04, 0.04, 0.05, 32, 0.8, 1.595, 4.45, '#344b05'));
+				bottles.add(drawBottleBottom1(0.04, 0.08, 0.15, 32, 0.8, 1.495, 4.45, '#344b05'));
+				bottles.add(drawBottleBottom1(0.08, 0.08, 0.2, 32, 0.8, 1.32, 4.45, '#344b05'));
+
+				// bottle
+				bottles.add(drawBottleTopFront1(0.06, 0.06, 0.05, 32, 0.4, 1.595, 4.45, '#77552f'));
+				bottles.add(drawBottleTopBack1(0.06, 0.06, 0.05, 32, 0.4, 1.595, 4.45, '#77552f'));
+				bottles.add(drawBottleBottom1(0.06, 0.08, 0.15, 32, 0.4, 1.495, 4.45, '#77552f'));
+				bottles.add(drawBottleBottom1(0.08, 0.08, 0.2, 32, 0.4, 1.32, 4.45, '#77552f'));
+
+				// bottle
+				bottles.add(drawBottleTopFront1(0.02, 0.02, 0.15, 32, 0, 1.775, 4.5, '#123456'));
+				bottles.add(drawBottleTopBack1(0.02, 0.02, 0.15, 32, 0, 1.775, 4.5, '#123456'));
+				bottles.add(drawBottleBottom1(0.02, 0.1, 0.08, 32, 0, 1.66, 4.5, '#123456'));
+				bottles.add(drawBottleBottom1(0.1, 0.1, 0.4, 32, 0, 1.42, 4.5, '#123456'));
+
+				// bottle
+				bottles.add(drawBottleTopFront1(0.02, 0.02, 0.1, 32, -0.5, 1.65, 4.6, '#720828'));
+				bottles.add(drawBottleTopBack1(0.02, 0.02, 0.1, 32, -0.5, 1.65, 4.6, '#720828'));
+				bottles.add(drawBottleBottom1(0.02, 0.08, 0.08, 32, -0.5, 1.56, 4.6, '#720828'));
+				bottles.add(drawBottleBottom1(0.08, 0.08, 0.3, 32, -0.5, 1.37, 4.6, '#720828'));
+
+				// bottle
+				bottles.add(drawBottleTopFront1(0.02, 0.02, 0.05, 32, -0.8, 1.595, 4.6, '#344b05'));
+				bottles.add(drawBottleTopBack1(0.02, 0.02, 0.05, 32, -0.8, 1.595, 4.6, '#344b05'));
+				bottles.add(drawBottleBottom1(0.02, 0.08, 0.15, 32, -0.8, 1.495, 4.6, '#344b05'));
+				bottles.add(drawBottleBottom1(0.08, 0.08, 0.2, 32, -0.8, 1.32, 4.6, '#344b05'));
+
+				// bottle
+				bottles.add(drawBottleTopFront1(0.03, 0.03, 0.12, 32, -2, 1.68, 4.6, '#5d1662'));
+				bottles.add(drawBottleTopBack1(0.03, 0.03, 0.12, 32, -2, 1.68, 4.6, '#5d1662'));
+				bottles.add(drawBottleBottom1(0.03, 0.05, 0.1, 32, -2, 1.57, 4.6, '#5d1662'));
+				bottles.add(drawBottleBottom1(0.05, 0.05, 0.3, 32, -2, 1.37, 4.6, '#5d1662'));
+
+				// bottle
+				bottles.add(drawBottleTopFront1(0.03, 0.03, 0.04, 32, -2.2, 1.58, 4.6, '#03750c'));
+				bottles.add(drawBottleTopBack1(0.03, 0.03, 0.04, 32, -2.2, 1.58, 4.6, '#03750c'));
+				bottles.add(drawBottleBottom1(0.03, 0.05, 0.04, 32, -2.2, 1.54, 4.6, '#03750c'));
+				bottles.add(drawBottleBottom1(0.05, 0.05, 0.3, 32, -2.2, 1.37, 4.6, '#03750c'));
+
+				// round bottle
+				bottles.add(drawBottleTopFront1(0.03, 0.03, 0.12, 32, -3.4, 1.68, 4.6, '#da8f06'));
+				bottles.add(drawBottleTopBack1(0.03, 0.03, 0.12, 32, -3.4, 1.68, 4.6, '#da8f06'));
+				bottles.add(drawBottleBottom2(0.2, -3.4, 1.43, 4.6, '#da8f06'));
+				bottles.add(drawBottleBottom1(0.05, 0.05, 0.01, 32, -3.4, 1.23, 4.6, '#da8f06'));
+
+				// bottle
+				bottles.add(drawBottleTopFront1(0.03, 0.03, 0.04, 32, -3.8, 1.58, 4.5, '#563a4b'));
+				bottles.add(drawBottleTopBack1(0.03, 0.03, 0.04, 32, -3.8, 1.58, 4.5, '#563a4b'));
+				bottles.add(drawBottleBottom1(0.03, 0.05, 0.04, 32, -3.8, 1.54, 4.5, '#563a4b'));
+				bottles.add(drawBottleBottom1(0.05, 0.05, 0.3, 32, -3.8, 1.37, 4.5, '#563a4b'));
+
+				bottles.add(drawBottleTopFront1(0.03, 0.03, 0.02, 32, -3.9, 1.59, 4.65, '#be6a6a'));
+				bottles.add(drawBottleTopBack1(0.03, 0.03, 0.02, 32, -3.9, 1.59, 4.65, '#be6a6a'));
+				bottles.add(drawBottleBottom1(0.03, 0.05, 0.08, 32, -3.9, 1.54, 4.65, '#be6a6a'));
+				bottles.add(drawBottleBottom1(0.05, 0.05, 0.26, 32, -3.9, 1.37, 4.65, '#be6a6a'));
+
+				bottles.add(drawBottleTopFront1(0.03, 0.03, 0.05, 32, -4.6, 1.45, 4.7, '#2b5610'));
+				bottles.add(drawBottleTopBack1(0.03, 0.03, 0.05, 32, -4.6, 1.45, 4.7, '#2b5610'));
+				bottles.add(drawBottleBottom2(0.1, -4.6, 1.33, 4.7, '#2b5610'));
+				bottles.add(drawBottleBottom1(0.03, 0.03, 0.01, 32, -4.6, 1.23, 4.7, '#2b5610'));
+
+				bottles.add(drawBottleTopFront1(0.03, 0.03, 0.05, 32, -4.8, 1.45, 4.55, '#720828'));
+				bottles.add(drawBottleTopBack1(0.03, 0.03, 0.05, 32, -4.8, 1.45, 4.55, '#720828'));
+				bottles.add(drawBottleBottom2(0.1, -4.8, 1.33, 4.55, '#720828'));
+				bottles.add(drawBottleBottom1(0.03, 0.03, 0.01, 32, -4.8, 1.23, 4.55, '#720828'));
+
+				bottles.add(drawBottleTopFront1(0.03, 0.03, 0.05, 32, -5, 1.45, 4.7, '#373c42'));
+				bottles.add(drawBottleTopBack1(0.03, 0.03, 0.05, 32, -5, 1.45, 4.7, '#373c42'));
+				bottles.add(drawBottleBottom2(0.1, -5, 1.33, 4.7, '#373c42'));
+				bottles.add(drawBottleBottom1(0.03, 0.03, 0.01, 32, -5, 1.23, 4.7, '#373c42'));
+
+				scene.add( bottles );
+			}
+
+			function drawLamp()
+			{
+				var lamp = new THREE.Group();
+
+				lamp.add(drawLampPole(0.02, 0.02, 1.5, -2, 0.7, 1, 0));
+				lamp.add(drawLampPole(0.25, 0.25, 0.02, -2, 0, 1, 0));
+				lamp.add(drawLampPole(0.005, 0.005, 0.53, -2, 1.4, 1, 90));
+				lamp.add(drawLampTopFront(0.2, 0.3, 0.5, -2, 1.5, 1, '#dcc110'));
+				lamp.add(drawLampTopBack(0.2, 0.3, 0.5, -2, 1.5, 1, '#dcc110'));
+				lamp.add(drawBulb(-2, 1.5, 1));
+
+				lamp.add(drawTasselRound(0.02, -2, 1.24, 1.29, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -2, 1.21, 1.29, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -1.9, 1.24, 1.27, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -1.9, 1.21, 1.27, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -1.82, 1.24, 1.22, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -1.82, 1.21, 1.22, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -1.75, 1.24, 1.15, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -1.75, 1.21, 1.15, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -1.71, 1.24, 1.05, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -1.71, 1.21, 1.05, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -1.7, 1.24, 0.95, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -1.7, 1.21, 0.95, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -1.73, 1.24, 0.86, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -1.73, 1.21, 0.86, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -1.8, 1.24, 0.78, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -1.8, 1.21, 0.78, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -2.1, 1.24, 1.27, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -2.1, 1.21, 1.27, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -2.21, 1.24, 1.2, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -2.21, 1.21, 1.2, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -2.27, 1.24, 1.1, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -2.27, 1.21, 1.1, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -2.29, 1.24, 0.98, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -2.29, 1.21, 0.98, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -2.26, 1.24, 0.87, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -2.26, 1.21, 0.87, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -2.2, 1.24, 0.78, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -2.2, 1.21, 0.78, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -2.1, 1.24, 0.72, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -2.1, 1.21, 0.72, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -2, 1.24, 0.7, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -2, 1.21, 0.7, "#bb0c55"));
+
+				lamp.add(drawTasselRound(0.02, -1.9, 1.24, 0.71, "#bb0c55"));
+				lamp.add(drawTasselCone(0.02, -1.9, 1.21, 0.71, "#bb0c55"));
+
+
+				scene.add(lamp);
+			}
+
+			drawWalls();
+			drawShelves();
+			drawBottles();
+			drawLamp();
+
+		</script>
+		
+	</body>
+</html>
+
+
